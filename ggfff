@@ -1,0 +1,77 @@
+import re
+import math
+import ipaddress
+from urllib.parse import urlparse
+import tldextract
+
+
+def calculate_entropy(text):
+    """문자열 엔트로피 계산"""
+    prob = [float(text.count(c)) / len(text) for c in dict.fromkeys(list(text))]
+    return -sum([p * math.log2(p) for p in prob])
+
+
+def has_ip(domain):
+    try:
+        ipaddress.ip_address(domain)
+        return 1
+    except:
+        return 0
+
+
+def extract_features(url):
+    parsed = urlparse(url)
+
+    ext = tldextract.extract(url)
+
+    domain = ext.domain
+    subdomain = ext.subdomain
+
+    features = {
+        "url_length": len(url),
+
+        "domain_length": len(domain),
+
+        "subdomain_length": len(subdomain),
+
+        "dot_count": url.count("."),
+
+        "hyphen_count": url.count("-"),
+
+        "slash_count": url.count("/"),
+
+        "question_count": url.count("?"),
+
+        "equal_count": url.count("="),
+
+        "at_count": url.count("@"),
+
+        "digit_count": sum(c.isdigit() for c in url),
+
+        "https": 1 if parsed.scheme == "https" else 0,
+
+        "ip_address": has_ip(parsed.netloc),
+
+        "subdomain_count":
+            len(subdomain.split(".")) if subdomain else 0,
+
+        "entropy":
+            calculate_entropy(url),
+
+        "keyword_login":
+            1 if "login" in url.lower() else 0,
+
+        "keyword_bank":
+            1 if "bank" in url.lower() else 0,
+
+        "keyword_secure":
+            1 if "secure" in url.lower() else 0,
+
+        "keyword_verify":
+            1 if "verify" in url.lower() else 0,
+
+        "keyword_account":
+            1 if "account" in url.lower() else 0,
+    }
+
+    return features
